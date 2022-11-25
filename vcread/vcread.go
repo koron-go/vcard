@@ -1,3 +1,6 @@
+/*
+Package vcread provides VCard reader.
+*/
 package vcread
 
 import (
@@ -82,7 +85,7 @@ func (r *Reader) Read() (Token, error) {
 
 var ErrIncompleteName = errors.New("incomplete name, missing a colon")
 
-func (r *Reader) readName() (*NameToken, error) {
+func (r *Reader) readName() (Token, error) {
 	b, err := r.br.ReadBytes(':')
 	if err != nil {
 		if errors.Is(err, io.EOF) && len(b) > 0 {
@@ -107,7 +110,7 @@ func (r *Reader) readName() (*NameToken, error) {
 	return &NameToken{NameBytes: bn}, nil
 }
 
-func (r *Reader) readParam() (*ParamToken, error) {
+func (r *Reader) readParam() (Token, error) {
 	var curr []byte
 	// find delimiter ';' for next parameters
 	x := bytes.IndexByte(r.pend, ';')
@@ -133,7 +136,7 @@ func (r *Reader) readParam() (*ParamToken, error) {
 	return &ParamToken{NameBytes: name, ValueBytes: value}, nil
 }
 
-func (r *Reader) readValue() (*ValueToken, error) {
+func (r *Reader) readValue() (Token, error) {
 	b, err := r.br.ReadBytes('\n')
 	if err != nil {
 		if errors.Is(err, io.EOF) {
