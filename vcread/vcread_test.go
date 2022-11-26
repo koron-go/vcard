@@ -73,7 +73,7 @@ func TestFoldedLine(t *testing.T) {
 			Continue:   true,
 		},
 		&vcread.ValueToken{
-			ValueBytes: []byte("VERSION:2.1\r\n"),
+			ValueBytes: []byte(" VERSION:2.1\r\n"),
 			Continue:   false,
 		},
 		&vcread.NameToken{

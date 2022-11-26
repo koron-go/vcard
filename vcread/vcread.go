@@ -184,30 +184,29 @@ func (r *Reader) readValue() (Token, error) {
 	}
 }
 
+func (r *Reader) trapReadValueErr(b []byte, err error) (Token, error) {
+	if errors.Is(err, io.EOF) {
+		r.mode = nameMode
+		r.encoding = rawEnc
+		return &ValueToken{
+			ValueBytes: b,
+			Continue:   false,
+		}, nil
+	}
+	return nil, err
+}
+
 func (r *Reader) readValueRaw() (Token, error) {
 	b, err := r.br.ReadBytes('\n')
 	if err != nil {
-		if errors.Is(err, io.EOF) {
-			r.mode = nameMode
-			return &ValueToken{
-				ValueBytes: b,
-				Continue:   false,
-			}, nil
-		}
-		return nil, err
+		return r.trapReadValueErr(b, err)
 	}
 	// read a next byte to check is it a white space?
 	next, err := r.br.ReadByte()
 	if err != nil {
-		if errors.Is(err, io.EOF) {
-			r.mode = nameMode
-			return &ValueToken{
-				ValueBytes: b,
-				Continue:   false,
-			}, nil
-		}
-		return nil, err
+		return r.trapReadValueErr(b, err)
 	}
+	r.br.UnreadByte() // unread non-white space
 	// next line folded.
 	if next == ' ' || next == '\t' {
 		return &ValueToken{
@@ -216,8 +215,8 @@ func (r *Reader) readValueRaw() (Token, error) {
 		}, nil
 	}
 	// no next line.
-	r.br.UnreadByte()
 	r.mode = nameMode
+	r.encoding = rawEnc
 	return &ValueToken{
 		ValueBytes: b,
 		Continue:   false,
@@ -225,11 +224,43 @@ func (r *Reader) readValueRaw() (Token, error) {
 }
 
 func (r *Reader) readValueQP() (Token, error) {
-	// TODO: read QUOTED-PRINTABLE encoded value.
-	return r.readValueRaw()
+	b, err := r.br.ReadBytes('\n')
+	if err != nil {
+		return r.trapReadValueErr(b, err)
+	}
+	keepMode := bytes.HasSuffix(b, []byte{'=', '\r', '\n'}) || bytes.HasSuffix(b, []byte{'=', '\n'})
+	if keepMode {
+		return &ValueToken{
+			ValueBytes: b,
+			Continue:   true,
+		}, nil
+	}
+	// no next line.
+	r.mode = nameMode
+	r.encoding = rawEnc
+	return &ValueToken{
+		ValueBytes: b,
+		Continue:   false,
+	}, nil
 }
 
 func (r *Reader) readValueB64() (Token, error) {
-	// TODO: read BASE64 encoded value.
-	return r.readValueRaw()
+	b, err := r.br.ReadBytes('\n')
+	if err != nil {
+		return r.trapReadValueErr(b, err)
+	}
+	keepMode := !bytes.Equal(b, []byte{'\r', '\n'}) && !bytes.Equal(b, []byte{'\n'})
+	if keepMode {
+		return &ValueToken{
+			ValueBytes: b,
+			Continue:   true,
+		}, nil
+	}
+	// no next line.
+	r.mode = nameMode
+	r.encoding = rawEnc
+	return &ValueToken{
+		ValueBytes: b,
+		Continue:   false,
+	}, nil
 }
