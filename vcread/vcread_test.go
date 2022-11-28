@@ -10,7 +10,7 @@ import (
 	"github.com/koron-go/vcard/vcread"
 )
 
-func assertRead(t *testing.T, r *vcread.Reader, tokens ...vcread.Token) {
+func assertReadAll(t *testing.T, r *vcread.Reader, tokens ...vcread.Token) {
 	t.Helper()
 	for i, want := range tokens {
 		got, err := r.Read()
@@ -61,7 +61,7 @@ func assertReadErr(t *testing.T, r *vcread.Reader, tokens []vcread.Token, wantEr
 }
 
 func TestSimple(t *testing.T) {
-	assertRead(t,
+	assertReadAll(t,
 		vcread.New(strings.NewReader("BEGIN:VCARD\r\nVERSION:2.1\r\nEND:VCARD\r\n")),
 		&vcread.NameToken{
 			NameBytes: []byte("BEGIN"),
@@ -88,7 +88,7 @@ func TestSimple(t *testing.T) {
 }
 
 func TestFoldedLine(t *testing.T) {
-	assertRead(t,
+	assertReadAll(t,
 		vcread.New(strings.NewReader("BEGIN:VCARD\r\n VERSION:2.1\r\nEND:VCARD\r\n")),
 		&vcread.NameToken{
 			NameBytes: []byte("BEGIN"),
@@ -112,7 +112,7 @@ func TestFoldedLine(t *testing.T) {
 }
 
 func TestParams(t *testing.T) {
-	assertRead(t,
+	assertReadAll(t,
 		vcread.New(strings.NewReader("FN;B;CHARSET=UTF-8:John Doe\r\n")),
 		&vcread.NameToken{
 			NameBytes: []byte("FN"),
@@ -132,7 +132,7 @@ func TestParams(t *testing.T) {
 }
 
 func TestIncompleteValue(t *testing.T) {
-	assertRead(t,
+	assertReadAll(t,
 		vcread.New(strings.NewReader("BEGIN:VCARD")),
 		&vcread.NameToken{
 			NameBytes: []byte("BEGIN"),
@@ -156,7 +156,7 @@ func TestErrIncompleteName(t *testing.T) {
 }
 
 func TestEncodingRaw(t *testing.T) {
-	assertRead(t,
+	assertReadAll(t,
 		vcread.New(strings.NewReader("N;ENCODING=7BIT:Hello World\r\n")),
 		&vcread.NameToken{
 			NameBytes: []byte("N"),
@@ -173,7 +173,7 @@ func TestEncodingRaw(t *testing.T) {
 }
 
 func TestEncodingQP(t *testing.T) {
-	assertRead(t,
+	assertReadAll(t,
 		vcread.New(strings.NewReader("N;ENCODING=QUOTED-PRINTABLE:Hello=0D=0A=\r\n World\r\n")),
 		&vcread.NameToken{
 			NameBytes: []byte("N"),
@@ -194,7 +194,7 @@ func TestEncodingQP(t *testing.T) {
 }
 
 func TestEncodingQPIncomplete(t *testing.T) {
-	assertRead(t,
+	assertReadAll(t,
 		vcread.New(strings.NewReader("N;ENCODING=QUOTED-PRINTABLE:Hello=0D=0A=\r\n World")),
 		&vcread.NameToken{
 			NameBytes: []byte("N"),
@@ -215,7 +215,7 @@ func TestEncodingQPIncomplete(t *testing.T) {
 }
 
 func TestEncodingBase64(t *testing.T) {
-	assertRead(t,
+	assertReadAll(t,
 		vcread.New(strings.NewReader("N;ENCODING=BASE64:AAAA\r\n AAAA\r\nAA==\r\n\r\n")),
 		&vcread.NameToken{
 			NameBytes: []byte("N"),
@@ -244,7 +244,7 @@ func TestEncodingBase64(t *testing.T) {
 }
 
 func TestEncodingBase64Incomplete(t *testing.T) {
-	assertRead(t,
+	assertReadAll(t,
 		vcread.New(strings.NewReader("N;ENCODING=BASE64:AAAA\r\n")),
 		&vcread.NameToken{
 			NameBytes: []byte("N"),
@@ -265,7 +265,7 @@ func TestEncodingBase64Incomplete(t *testing.T) {
 }
 
 func TestEncodingBase64LFOnly(t *testing.T) {
-	assertRead(t,
+	assertReadAll(t,
 		vcread.New(strings.NewReader("N;ENCODING=BASE64:AA==\n\n")),
 		&vcread.NameToken{
 			NameBytes: []byte("N"),
