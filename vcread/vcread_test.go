@@ -162,7 +162,7 @@ func TestEncodingRaw(t *testing.T) {
 			NameBytes: []byte("N"),
 		},
 		&vcread.ParamToken{
-			NameBytes: []byte("ENCODING"),
+			NameBytes:  []byte("ENCODING"),
 			ValueBytes: []byte("7BIT"),
 		},
 		&vcread.ValueToken{
@@ -179,7 +179,7 @@ func TestEncodingQP(t *testing.T) {
 			NameBytes: []byte("N"),
 		},
 		&vcread.ParamToken{
-			NameBytes: []byte("ENCODING"),
+			NameBytes:  []byte("ENCODING"),
 			ValueBytes: []byte("QUOTED-PRINTABLE"),
 		},
 		&vcread.ValueToken{
@@ -200,7 +200,7 @@ func TestEncodingQPIncomplete(t *testing.T) {
 			NameBytes: []byte("N"),
 		},
 		&vcread.ParamToken{
-			NameBytes: []byte("ENCODING"),
+			NameBytes:  []byte("ENCODING"),
 			ValueBytes: []byte("QUOTED-PRINTABLE"),
 		},
 		&vcread.ValueToken{
@@ -221,7 +221,7 @@ func TestEncodingBase64(t *testing.T) {
 			NameBytes: []byte("N"),
 		},
 		&vcread.ParamToken{
-			NameBytes: []byte("ENCODING"),
+			NameBytes:  []byte("ENCODING"),
 			ValueBytes: []byte("BASE64"),
 		},
 		&vcread.ValueToken{
@@ -250,7 +250,7 @@ func TestEncodingBase64Incomplete(t *testing.T) {
 			NameBytes: []byte("N"),
 		},
 		&vcread.ParamToken{
-			NameBytes: []byte("ENCODING"),
+			NameBytes:  []byte("ENCODING"),
 			ValueBytes: []byte("BASE64"),
 		},
 		&vcread.ValueToken{
@@ -271,7 +271,7 @@ func TestEncodingBase64LFOnly(t *testing.T) {
 			NameBytes: []byte("N"),
 		},
 		&vcread.ParamToken{
-			NameBytes: []byte("ENCODING"),
+			NameBytes:  []byte("ENCODING"),
 			ValueBytes: []byte("BASE64"),
 		},
 		&vcread.ValueToken{
