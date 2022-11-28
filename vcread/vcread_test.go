@@ -129,3 +129,53 @@ func TestErrIncompleteName(t *testing.T) {
 		t.Errorf("read unexpected token, expected nil: %+v", tok)
 	}
 }
+
+func TestEncodingQP(t *testing.T) {
+	assertRead(t,
+		vcread.New(strings.NewReader("N;ENCODING=QUOTED-PRINTABLE:Hello=0D=0A=\r\n World\r\n")),
+		&vcread.NameToken{
+			NameBytes: []byte("N"),
+		},
+		&vcread.ParamToken{
+			NameBytes: []byte("ENCODING"),
+			ValueBytes: []byte("QUOTED-PRINTABLE"),
+		},
+		&vcread.ValueToken{
+			ValueBytes: []byte("Hello=0D=0A=\r\n"),
+			Continue:   true,
+		},
+		&vcread.ValueToken{
+			ValueBytes: []byte(" World\r\n"),
+			Continue:   false,
+		},
+	)
+}
+
+func TestEncodingBase64(t *testing.T) {
+	assertRead(t,
+		vcread.New(strings.NewReader("N;ENCODING=BASE64:AAAA\r\n AAAA\r\nAA==\r\n\r\n")),
+		&vcread.NameToken{
+			NameBytes: []byte("N"),
+		},
+		&vcread.ParamToken{
+			NameBytes: []byte("ENCODING"),
+			ValueBytes: []byte("BASE64"),
+		},
+		&vcread.ValueToken{
+			ValueBytes: []byte("AAAA\r\n"),
+			Continue:   true,
+		},
+		&vcread.ValueToken{
+			ValueBytes: []byte(" AAAA\r\n"),
+			Continue:   true,
+		},
+		&vcread.ValueToken{
+			ValueBytes: []byte("AA==\r\n"),
+			Continue:   true,
+		},
+		&vcread.ValueToken{
+			ValueBytes: []byte("\r\n"),
+			Continue:   false,
+		},
+	)
+}
